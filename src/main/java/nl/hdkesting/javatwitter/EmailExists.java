@@ -1,6 +1,5 @@
 package nl.hdkesting.javatwitter;
 
-import java.sql.SQLException;
 import java.util.*;
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.*;
