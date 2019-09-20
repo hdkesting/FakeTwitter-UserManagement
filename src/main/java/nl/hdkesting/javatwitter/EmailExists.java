@@ -1,9 +1,12 @@
 package nl.hdkesting.javatwitter;
 
+import java.sql.SQLException;
 import java.util.*;
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.services.AccountService;
+
+import javax.management.InvalidApplicationException;
 
 public class EmailExists {
     private AccountService accountService;
@@ -20,7 +23,7 @@ public class EmailExists {
     @FunctionName("EmailExists")
     public HttpResponseMessage run(
             @HttpTrigger(name = "req", methods = {HttpMethod.GET}, authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
-            final ExecutionContext context) {
+            final ExecutionContext context) throws InvalidApplicationException {
 
         // Parse query parameter
         String email = request.getQueryParameters().get("mail");
