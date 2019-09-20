@@ -44,13 +44,8 @@ public class EmailExistsTest {
         doReturn(Logger.getGlobal()).when(context).getLogger();
 
         // act
-        AccountService svc = new AccountService("jdbc:sqlserver://javatwitterdatabase.database.windows.net:1433;"+
-                "database=JavaTwitterAccountDb;user=hdkesting@javatwitterdatabase;password=Geheim01;"+
-                "encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;");
-        EmailExists fnc = new EmailExists(svc);
-
         try {
-            final HttpResponseMessage ret = fnc.run(req, context);
+            final HttpResponseMessage ret = new EmailExists().run(req, context);
 
             // assert
             assertEquals(ret.getStatus(), HttpStatus.NOT_FOUND);
