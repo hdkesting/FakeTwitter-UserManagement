@@ -21,12 +21,26 @@ public class EmailExistsTest {
 
     @Test
     public void testEmailExists_unknownEmail() throws Exception {
+        assert performTest("unknown@invalid.com", HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void testEmailExists_knownEmail() throws Exception {
+        assert performTest("sample@example.com", HttpStatus.OK);
+    }
+
+    @Test
+    public void testEmailExists_emptyEmail() throws Exception {
+        assert performTest("", HttpStatus.EXPECTATION_FAILED);
+    }
+
+    private boolean performTest(String emailToTest, HttpStatus expectedResponse) {
         // arrange
         @SuppressWarnings("unchecked")
         final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
         final Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("mail", "unknown@invalid.com");
+        queryParams.put("mail", emailToTest);
         doReturn(queryParams).when(req).getQueryParameters();
 
         final Optional<String> queryBody = Optional.empty();
@@ -48,11 +62,14 @@ public class EmailExistsTest {
             final HttpResponseMessage ret = new EmailExists().run(req, context);
 
             // assert
-            assertEquals(ret.getStatus(), HttpStatus.NOT_FOUND);
+            assertEquals(ret.getStatus(), expectedResponse);
+            return true;
         }
         catch (InvalidApplicationException ex) {
             ex.printStackTrace();
             fail();
         }
+
+        return false;
     }
 }

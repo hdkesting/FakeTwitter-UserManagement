@@ -17,26 +17,17 @@ public class AccountService {
 
     public boolean emailExists(String emailAddress) throws InvalidApplicationException {
         String query = "SELECT 1 FROM Accounts WHERE email=?";
-//        try {
-//            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//            throw new InvalidApplicationException(e);
-//        }
+
         try (Connection connection = DriverManager.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, emailAddress);
 
             ResultSet result = statement.executeQuery();
-            if (result.next()) {
-                return true;
-            }
+            return result.next();
         }
         catch (SQLException ex) {
             ex.printStackTrace();
             throw new InvalidApplicationException(ex);
         }
-
-        return false;
     }
 }
