@@ -8,13 +8,19 @@ import java.util.List;
 public class AccountService {
     private String connectionString;
 
-    public AccountService() {
+    public AccountService() throws SQLException {
         this(System.getenv("dbconnstr"));
     }
 
-    public AccountService(String connStr) {
+    public AccountService(String connStr) throws SQLException {
         System.setProperty("java.net.preferIPv6Addresses", "true");
         this.connectionString = connStr;
+
+        try (Connection connection = DriverManager.getConnection(this.connectionString)) {
+            // great, there is connection!
+        } catch (SQLException ex) {
+            throw ex;
+        }
     }
 
     public boolean emailExists(String emailAddress) throws InvalidApplicationException {

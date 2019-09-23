@@ -4,6 +4,7 @@ import com.microsoft.azure.functions.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -67,6 +68,10 @@ public class FreeNickTest {
         }
         catch (InvalidApplicationException ex) {
             ex.printStackTrace();
+            fail();
+        }
+        catch (SQLException sex) {
+            sex.printStackTrace();
             fail();
         }
 

@@ -1,13 +1,16 @@
 package nl.hdkesting.javatwitter;
 
 import com.microsoft.azure.functions.*;
+import nl.hdkesting.javatwitter.services.AccountService;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
-
-import org.junit.jupiter.api.Test;
 
 import javax.management.InvalidApplicationException;
 
@@ -15,7 +18,22 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EmailExistsTest {
+    private AccountService accountService;
+
+    // NB: do note that testing happens against an in-memory H2 database, while live runs against Azure SqlServer.
+
+    @BeforeAll
+    public void initializeTest() {
+        try {
+            this.accountService = new AccountService("jdbc:h2:mem:accountdb;" +
+                    "INIT=RUNSCRIPT FROM 'classpath:create_account.sql'\\;" +
+                    "RUNSCRIPT FROM 'classpath:data_account_email.sql'");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void testEmailExists_unknownEmail() throws Exception {
@@ -33,17 +51,22 @@ public class EmailExistsTest {
     }
 
     private boolean performTest(String emailToTest, HttpStatus expectedResponse) {
-        // arrange
+        // ARRANGE
+
+        // create incoming request
         @SuppressWarnings("unchecked")
         final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
+        // add parameter(s) to request
         final Map<String, String> queryParams = new HashMap<>();
         queryParams.put("mail", emailToTest);
         doReturn(queryParams).when(req).getQueryParameters();
 
+        // add (empty) body to request
         final Optional<String> queryBody = Optional.empty();
         doReturn(queryBody).when(req).getBody();
 
+        // create response
         doAnswer(new Answer<HttpResponseMessage.Builder>() {
             @Override
             public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
@@ -52,14 +75,15 @@ public class EmailExistsTest {
             }
         }).when(req).createResponseBuilder(any(HttpStatus.class));
 
+        // create execution context
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
 
-        // act
+        // ACT
         try {
-            final HttpResponseMessage ret = new EmailExists().run(req, context);
+            final HttpResponseMessage ret = new EmailExists(this.accountService).run(req, context);
 
-            // assert
+            // ASSERT
             assertEquals(ret.getStatus(), expectedResponse);
             return true;
         }
