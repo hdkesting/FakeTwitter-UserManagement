@@ -12,6 +12,10 @@ public class EmailExists {
     private AccountService accountService;
 
     public EmailExists(AccountService accountService) {
+        if (accountService == null) {
+            throw new IllegalArgumentException("accountService parameter should not be null.");
+        }
+        
         this.accountService = accountService;
     }
 
