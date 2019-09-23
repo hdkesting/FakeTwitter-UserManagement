@@ -29,7 +29,7 @@ public class EmailExistsTest {
         try {
             this.accountService = new AccountService("jdbc:h2:mem:accountdb;" +
                     "INIT=RUNSCRIPT FROM 'classpath:create_account.sql'\\;" +
-                    "RUNSCRIPT FROM 'classpath:data_account_email.sql'");
+                    "RUNSCRIPT FROM 'classpath:data_account.sql'");
         } catch (SQLException e) {
             e.printStackTrace();
         }

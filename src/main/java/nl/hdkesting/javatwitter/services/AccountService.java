@@ -57,10 +57,10 @@ public class AccountService {
     }
 
     public String getFreeNickname(String nickname) throws InvalidApplicationException {
-        String query = "SELECT nickname FROM Accounts WHERE nickname like ? + '%'";
+        String query = "SELECT nickname FROM Accounts WHERE nickname like ?";
         try (Connection connection = DriverManager.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
-            statement.setString(1, nickname);
+            statement.setString(1, nickname + "%");
 
             ResultSet result = statement.executeQuery();
             List<String> knownnicks = new ArrayList<>();

@@ -1,6 +1,9 @@
 package nl.hdkesting.javatwitter;
 
 import com.microsoft.azure.functions.*;
+import nl.hdkesting.javatwitter.services.AccountService;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -16,7 +19,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FreeNickTest {
+    private AccountService accountService;
+
+    @BeforeAll
+    public void initializeTest() {
+        try {
+            this.accountService = new AccountService("jdbc:h2:mem:accountdb;" +
+                    "INIT=RUNSCRIPT FROM 'classpath:create_account.sql'\\;" +
+                    "RUNSCRIPT FROM 'classpath:data_account.sql'");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void testGetFreeNick_unknownNick() {
@@ -60,7 +76,7 @@ public class FreeNickTest {
 
         // act
         try {
-            final HttpResponseMessage ret = new GetFreeNickname().run(req, context);
+            final HttpResponseMessage ret = new GetFreeNickname(this.accountService).run(req, context);
 
             // assert
             assertEquals(ret.getStatus(), HttpStatus.OK);
@@ -68,10 +84,6 @@ public class FreeNickTest {
         }
         catch (InvalidApplicationException ex) {
             ex.printStackTrace();
-            fail();
-        }
-        catch (SQLException sex) {
-            sex.printStackTrace();
             fail();
         }
 
