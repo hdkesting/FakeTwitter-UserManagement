@@ -16,10 +16,10 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <azure.functions.maven.plugin.version>1.3.3</azure.functions.maven.plugin.version>
         <azure.functions.java.library.version>1.3.0</azure.functions.java.library.version>
-        <functionAppName>user-management-20190919155321135</functionAppName>
-        <functionAppRegion>westus</functionAppRegion>
+        <functionAppName>fake-twitter-user-management</functionAppName>
+        <functionAppRegion>westeu</functionAppRegion>
         <stagingDirectory>${project.build.directory}/azure-functions/${functionAppName}</stagingDirectory>
-        <functionResourceGroup>java-functions-group</functionResourceGroup>
+        <functionResourceGroup>Fake-Twitter</functionResourceGroup>
     </properties>
 
     <repositories>
