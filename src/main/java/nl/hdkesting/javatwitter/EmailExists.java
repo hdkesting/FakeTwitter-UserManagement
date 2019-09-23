@@ -35,6 +35,10 @@ public class EmailExists {
             return request.createResponseBuilder(HttpStatus.EXPECTATION_FAILED).body("Please pass an email address to check.").build();
         }
 
+        if (this.accountService == null) {
+            throw new NullPointerException("Account service is NULL!");
+        }
+
         if (this.accountService.emailExists(email)) {
             // 200 OK
             context.getLogger().info("The supplied email address (" + email + ") IS known.");
