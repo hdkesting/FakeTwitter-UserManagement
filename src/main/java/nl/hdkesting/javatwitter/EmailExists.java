@@ -40,6 +40,7 @@ public class EmailExists {
         }
 
         if (this.accountService == null) {
+            context.getLogger().severe("EmailExists: Account service is NULL!");
             throw new NullPointerException("Account service is NULL!");
         }
 

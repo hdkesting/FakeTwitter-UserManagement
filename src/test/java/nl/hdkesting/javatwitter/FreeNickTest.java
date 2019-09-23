@@ -2,7 +2,6 @@ package nl.hdkesting.javatwitter;
 
 import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.services.AccountService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -19,18 +18,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FreeNickTest {
     private AccountService accountService;
 
-    @BeforeAll
+    // @BeforeEach or @BeforeAll - both do NOT work in GitHub CI
     public void initializeTest() {
-        try {
-            this.accountService = new AccountService("jdbc:h2:mem:accountdb;" +
-                    "INIT=RUNSCRIPT FROM 'classpath:create_account.sql'\\;" +
-                    "RUNSCRIPT FROM 'classpath:data_account.sql'");
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if (this.accountService == null) {
+            try {
+                this.accountService = new AccountService("jdbc:h2:mem:accountdb;" +
+                        "INIT=RUNSCRIPT FROM 'classpath:create_account.sql'\\;" +
+                        "RUNSCRIPT FROM 'classpath:data_account.sql'");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -52,7 +52,9 @@ public class FreeNickTest {
     }
 
     private String performTest(String nickToTest) {
-        // arrange
+        // ARRANGE
+        initializeTest();
+
         @SuppressWarnings("unchecked")
         final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
@@ -74,11 +76,11 @@ public class FreeNickTest {
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
 
-        // act
+        // ACT
         try {
             final HttpResponseMessage ret = new GetFreeNickname(this.accountService).run(req, context);
 
-            // assert
+            // ASSERT
             assertEquals(ret.getStatus(), HttpStatus.OK);
             return ret.getBody().toString();
         }

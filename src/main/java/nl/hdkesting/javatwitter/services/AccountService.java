@@ -4,6 +4,7 @@ import javax.management.InvalidApplicationException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class AccountService {
     private String connectionString;
@@ -18,6 +19,7 @@ public class AccountService {
 
         try (Connection connection = DriverManager.getConnection(this.connectionString)) {
             // great, there is connection!
+            Logger.getGlobal().info("AccountService: There IS a database connection, using: " + this.connectionString);
         } catch (SQLException ex) {
             throw ex;
         }

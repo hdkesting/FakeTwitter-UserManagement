@@ -2,7 +2,6 @@ package nl.hdkesting.javatwitter;
 
 import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.services.AccountService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.invocation.InvocationOnMock;
@@ -18,20 +17,21 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EmailExistsTest {
     private AccountService accountService;
 
     // NB: do note that testing happens against an in-memory H2 database, while live runs against Azure SqlServer.
 
-    @BeforeAll
+    // @BeforeEach or @BeforeAll - both do NOT work in GitHub CI
     public void initializeTest() {
-        try {
-            this.accountService = new AccountService("jdbc:h2:mem:accountdb;" +
-                    "INIT=RUNSCRIPT FROM 'classpath:create_account.sql'\\;" +
-                    "RUNSCRIPT FROM 'classpath:data_account.sql'");
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if (this.accountService == null) {
+            try {
+                this.accountService = new AccountService("jdbc:h2:mem:accountdb;" +
+                        "INIT=RUNSCRIPT FROM 'classpath:create_account.sql'\\;" +
+                        "RUNSCRIPT FROM 'classpath:data_account.sql'");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -52,6 +52,7 @@ public class EmailExistsTest {
 
     private boolean performTest(String emailToTest, HttpStatus expectedResponse) {
         // ARRANGE
+        initializeTest();
 
         // create incoming request
         @SuppressWarnings("unchecked")

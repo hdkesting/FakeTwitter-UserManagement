@@ -12,6 +12,10 @@ public class GetFreeNickname {
     private AccountService accountService;
 
     public GetFreeNickname(AccountService accountService) {
+        if (accountService == null) {
+            throw new IllegalArgumentException("accountService parameter should not be null.");
+        }
+
         this.accountService = accountService;
     }
 
@@ -32,6 +36,11 @@ public class GetFreeNickname {
         if (nick == null || nick.trim().isEmpty()) {
             // 417 EXPECTATION FAILED
             return request.createResponseBuilder(HttpStatus.EXPECTATION_FAILED).body("Please pass a nickname to check.").build();
+        }
+
+        if (this.accountService == null) {
+            context.getLogger().severe("GetFreeNickname: Account service is NULL!");
+            throw new NullPointerException("Account service is NULL!");
         }
 
         if (this.accountService.nicknameIsAvailable(nick)) {
