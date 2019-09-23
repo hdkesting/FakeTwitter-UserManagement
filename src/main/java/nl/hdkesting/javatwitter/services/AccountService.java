@@ -8,13 +8,19 @@ import java.util.List;
 public class AccountService {
     private String connectionString;
 
-    public AccountService() {
+    public AccountService() throws SQLException {
         this(System.getenv("dbconnstr"));
     }
 
-    public AccountService(String connStr) {
+    public AccountService(String connStr) throws SQLException {
         System.setProperty("java.net.preferIPv6Addresses", "true");
         this.connectionString = connStr;
+
+        try (Connection connection = DriverManager.getConnection(this.connectionString)) {
+            // great, there is connection!
+        } catch (SQLException ex) {
+            throw ex;
+        }
     }
 
     public boolean emailExists(String emailAddress) throws InvalidApplicationException {
@@ -51,10 +57,10 @@ public class AccountService {
     }
 
     public String getFreeNickname(String nickname) throws InvalidApplicationException {
-        String query = "SELECT nickname FROM Accounts WHERE nickname like ? + '%'";
+        String query = "SELECT nickname FROM Accounts WHERE nickname like ?";
         try (Connection connection = DriverManager.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
-            statement.setString(1, nickname);
+            statement.setString(1, nickname + "%");
 
             ResultSet result = statement.executeQuery();
             List<String> knownnicks = new ArrayList<>();

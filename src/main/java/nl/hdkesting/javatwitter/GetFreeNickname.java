@@ -1,5 +1,6 @@
 package nl.hdkesting.javatwitter;
 
+import java.sql.SQLException;
 import java.util.*;
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.*;
@@ -14,7 +15,7 @@ public class GetFreeNickname {
         this.accountService = accountService;
     }
 
-    public GetFreeNickname() {
+    public GetFreeNickname() throws SQLException {
         this(new AccountService());
         // Fake DI
     }
