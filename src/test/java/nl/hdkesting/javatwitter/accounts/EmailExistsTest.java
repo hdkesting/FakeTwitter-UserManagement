@@ -1,8 +1,8 @@
-package nl.hdkesting.javatwitter;
+package nl.hdkesting.javatwitter.accounts;
 
 import com.microsoft.azure.functions.*;
-import nl.hdkesting.javatwitter.services.AccountService;
-import org.junit.jupiter.api.TestInstance;
+import nl.hdkesting.javatwitter.accounts.services.AccountService;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -10,16 +10,16 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 
-import org.junit.jupiter.api.Test;
-
 import javax.management.InvalidApplicationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-public class FreeNickTest {
+public class EmailExistsTest {
     private AccountService accountService;
+
+    // NB: do note that testing happens against an in-memory H2 database, while live runs against Azure SqlServer.
 
     // @BeforeEach or @BeforeAll - both do NOT work in GitHub CI
     public void initializeTest() {
@@ -35,36 +35,38 @@ public class FreeNickTest {
     }
 
     @Test
-    public void testGetFreeNick_unknownNick() {
-        final String nickToTest = "q@q";
-        String newnick = performTest(nickToTest);
-
-        assertEquals(nickToTest, newnick);
+    public void testEmailExists_unknownEmail() throws Exception {
+        assert performTest("unknown@invalid.com", HttpStatus.NOT_FOUND);
     }
 
     @Test
-    public void testGetFreeNick_knownNick() {
-        final String nickToTest = "testsample";
-        String newnick = performTest(nickToTest);
-
-        assertNotEquals(nickToTest, newnick);
-        assert newnick.startsWith(nickToTest);
+    public void testEmailExists_knownEmail() throws Exception {
+        assert performTest("sample@example.com", HttpStatus.OK);
     }
 
-    private String performTest(String nickToTest) {
+    @Test
+    public void testEmailExists_emptyEmail() throws Exception {
+        assert performTest("", HttpStatus.EXPECTATION_FAILED);
+    }
+
+    private boolean performTest(String emailToTest, HttpStatus expectedResponse) {
         // ARRANGE
         initializeTest();
 
+        // create incoming request
         @SuppressWarnings("unchecked")
         final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
+        // add parameter(s) to request
         final Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("nick", nickToTest);
+        queryParams.put("mail", emailToTest);
         doReturn(queryParams).when(req).getQueryParameters();
 
+        // add (empty) body to request
         final Optional<String> queryBody = Optional.empty();
         doReturn(queryBody).when(req).getBody();
 
+        // create response
         doAnswer(new Answer<HttpResponseMessage.Builder>() {
             @Override
             public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
@@ -73,22 +75,23 @@ public class FreeNickTest {
             }
         }).when(req).createResponseBuilder(any(HttpStatus.class));
 
+        // create execution context
         final ExecutionContext context = mock(ExecutionContext.class);
         doReturn(Logger.getGlobal()).when(context).getLogger();
 
         // ACT
         try {
-            final HttpResponseMessage ret = new GetFreeNickname(this.accountService).run(req, context);
+            final HttpResponseMessage ret = new EmailExists(this.accountService).run(req, context);
 
             // ASSERT
-            assertEquals(ret.getStatus(), HttpStatus.OK);
-            return ret.getBody().toString();
+            assertEquals(ret.getStatus(), expectedResponse);
+            return true;
         }
         catch (InvalidApplicationException ex) {
             ex.printStackTrace();
             fail();
         }
 
-        return null;
+        return false;
     }
 }

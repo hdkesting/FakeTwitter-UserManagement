@@ -1,10 +1,10 @@
-package nl.hdkesting.javatwitter;
+package nl.hdkesting.javatwitter.accounts;
 
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
 import com.microsoft.azure.functions.HttpStatus;
-import nl.hdkesting.javatwitter.services.AccountService;
+import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;

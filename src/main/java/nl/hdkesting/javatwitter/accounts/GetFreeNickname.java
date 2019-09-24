@@ -1,10 +1,10 @@
-package nl.hdkesting.javatwitter;
+package nl.hdkesting.javatwitter.accounts;
 
 import java.sql.SQLException;
 import java.util.*;
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.*;
-import nl.hdkesting.javatwitter.services.AccountService;
+import nl.hdkesting.javatwitter.accounts.services.AccountService;
 
 import javax.management.InvalidApplicationException;
 

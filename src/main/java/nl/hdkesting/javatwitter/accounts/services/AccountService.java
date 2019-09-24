@@ -1,4 +1,4 @@
-package nl.hdkesting.javatwitter.services;
+package nl.hdkesting.javatwitter.accounts.services;
 
 import javax.management.InvalidApplicationException;
 import java.sql.*;
