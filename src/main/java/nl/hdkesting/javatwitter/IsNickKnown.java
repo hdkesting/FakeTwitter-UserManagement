@@ -9,13 +9,13 @@ import nl.hdkesting.javatwitter.services.AccountService;
 import javax.management.InvalidApplicationException;
 
 /**
- * A Function to get a free nickname, based on the supplied value.
- * It returns the value when it is free, or a generated free one.
+ * A function to check whether a proposed nickname is already known.
+ * It returns a status 200 when it is known, of 404 when it isn't.
  */
-public class GetFreeNickname {
+public class IsNickKnown {
     private AccountService accountService;
 
-    public GetFreeNickname(AccountService accountService) {
+    public IsNickKnown(AccountService accountService) {
         if (accountService == null) {
             throw new IllegalArgumentException("accountService parameter should not be null.");
         }
@@ -23,20 +23,19 @@ public class GetFreeNickname {
         this.accountService = accountService;
     }
 
-    public GetFreeNickname() throws SQLException {
+    public IsNickKnown() throws SQLException {
         this(new AccountService());
         // Fake DI
     }
 
-    // The function, triggered by a GET HTTP request, with parameter "nick" containing the proposed nickname.
-    @FunctionName("GetFreeNickname")
+    @FunctionName("IsNickKnown")
     public HttpResponseMessage run(
             @HttpTrigger(name = "req", methods = {HttpMethod.GET}, authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) throws InvalidApplicationException {
 
         // Parse query parameter
         String nick = request.getQueryParameters().get("nick");
-        context.getLogger().info("HTTP trigger processed a request for GetFreeNickname?nick=" + nick);
+        context.getLogger().info("HTTP trigger processed a request for IsNickKnown?nick=" + nick);
 
         if (nick == null || nick.trim().isEmpty()) {
             // 417 EXPECTATION FAILED
@@ -44,15 +43,14 @@ public class GetFreeNickname {
         }
 
         if (this.accountService == null) {
-            context.getLogger().severe("GetFreeNickname: Account service is NULL!");
+            context.getLogger().severe("IsNickKnown: Account service is NULL!");
             throw new NullPointerException("Account service is NULL!");
         }
 
-        if (this.accountService.nicknameIsAvailable(nick)) {
+        if (!this.accountService.nicknameIsAvailable(nick)) {
             return request.createResponseBuilder(HttpStatus.OK).body(nick).build();
         }
 
-        String freenick = this.accountService.getFreeNickname(nick);
-        return request.createResponseBuilder(HttpStatus.OK).body(freenick).build();
+        return request.createResponseBuilder(HttpStatus.NOT_FOUND).build();
     }
 }

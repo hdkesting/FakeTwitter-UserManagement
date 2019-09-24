@@ -8,6 +8,10 @@ import nl.hdkesting.javatwitter.services.AccountService;
 
 import javax.management.InvalidApplicationException;
 
+/**
+ * A Function to test whether there already is an account for the specified email address.
+ * It returns a status 200 when the address is known, or 404 when it isn't known.
+ */
 public class EmailExists {
     private AccountService accountService;
 
@@ -24,6 +28,7 @@ public class EmailExists {
         // Fake DI
     }
 
+    // the function, triggered by a GET HTTP request, with parameter "mail" containing the email address to check.
     @FunctionName("EmailExists")
     public HttpResponseMessage run(
             @HttpTrigger(name = "req", methods = {HttpMethod.GET}, authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
