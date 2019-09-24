@@ -1,7 +1,5 @@
 package nl.hdkesting.javatwitter.accounts.services;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -15,7 +13,7 @@ public class Encryptor {
     // no instance wanted
     private Encryptor(){}
 
-    public static String encrypt(@NotNull String clearTextPassword) {
+    public static String encrypt(String clearTextPassword) {
         if (clearTextPassword == null) {
             throw new IllegalArgumentException("password cannot be null");
         }
@@ -28,7 +26,7 @@ public class Encryptor {
         return saltString + SEPARATOR + hashString;
     }
 
-    public static boolean validate(@NotNull String clearTextPassword, @NotNull String hash) {
+    public static boolean validate(String clearTextPassword, String hash) {
         if (clearTextPassword == null) {
             throw new IllegalArgumentException("password cannot be null");
         }
