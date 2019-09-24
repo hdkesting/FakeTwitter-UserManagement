@@ -1,5 +1,7 @@
 package nl.hdkesting.javatwitter.accounts.services;
 
+import nl.hdkesting.javatwitter.accounts.support.AccountRegistration;
+
 import javax.management.InvalidApplicationException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -93,6 +95,26 @@ public class AccountService {
             ex.printStackTrace();
             throw new InvalidApplicationException(ex);
         }
+    }
 
+    public boolean createAccount(AccountRegistration account) {
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null.");
+        }
+
+        String query = "INSERT INTO Accounts (email, password, fullname, nickname, latestlogin) VALUES (?,?,?,?,null)";
+        try (Connection connection = DriverManager.getConnection(this.connectionString);
+             PreparedStatement statement = connection.prepareStatement(query);) {
+            statement.setString(1, account.getEmail());
+            statement.setString(2, account.getPassword());
+            statement.setString(3, account.getFullname());
+            statement.setString(4, account.getNickname());
+
+            int res = statement.executeUpdate();
+            return res == 1;
+        } catch (SQLException ex) {
+            // assume this is a unique constraint violation on email or nickname
+            return false;
+        }
     }
 }
