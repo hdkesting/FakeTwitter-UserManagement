@@ -19,4 +19,4 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      run: mvn package --file pom.xml
+      run: mvn compile test package --file pom.xml
