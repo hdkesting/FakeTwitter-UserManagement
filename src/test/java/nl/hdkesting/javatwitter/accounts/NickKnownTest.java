@@ -5,6 +5,7 @@ import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
 import com.microsoft.azure.functions.HttpStatus;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
+import nl.hdkesting.javatwitter.accounts.support.ConnStr;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -27,9 +28,7 @@ public class NickKnownTest {
     public void initializeTest() {
         if (this.accountService == null) {
             try {
-                this.accountService = new AccountService("jdbc:h2:mem:accountdb;" +
-                        "INIT=RUNSCRIPT FROM 'classpath:create_account.sql'\\;" +
-                        "RUNSCRIPT FROM 'classpath:data_account.sql'");
+                this.accountService = new AccountService(ConnStr.H2());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
