@@ -1,4 +1,4 @@
-package nl.hdkesting.javatwitter.accounts;
+package nl.hdkesting.javatwitter.accounts.support;
 
 import com.microsoft.azure.functions.*;
 

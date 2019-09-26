@@ -117,4 +117,41 @@ public class AccountService {
             return false;
         }
     }
+
+    public int getAccountIdByLogin(String email, String cleartextPassword) {
+        String queryPassword = "SELECT id, password FROM Accounts WHERE email=?";
+        String updateLogin = "UPDATE Accounts SET latestlogin=? WHERE id=?";
+
+        try (Connection connection = DriverManager.getConnection(this.connectionString);
+             PreparedStatement queryStatement = connection.prepareStatement(queryPassword);
+             PreparedStatement updateStatement = connection.prepareStatement(updateLogin);) {
+
+            queryStatement.setString(1, email);
+
+            ResultSet result = queryStatement.executeQuery();
+            if (result.next()) {
+                // found an email match, but is the password correct?
+                int id = result.getInt(1);
+                String hashedPassword = result.getString(2);
+                if (Encryptor.validate(cleartextPassword, hashedPassword)) {
+                    // yes, the password is correct!
+                    // so update "latest login"
+                    updateStatement.setDate(1, TokenService.getNow());
+                    updateStatement.setInt(2, id);
+                    updateStatement.executeUpdate();
+
+                    // and return the (positive) account id
+                    return id;
+                }
+            } else {
+                Logger.getGlobal().warning("No account found for " + email);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            Logger.getGlobal().severe(ex.toString());
+        }
+
+        // any problems end up here
+        return -1;
+    }
 }
