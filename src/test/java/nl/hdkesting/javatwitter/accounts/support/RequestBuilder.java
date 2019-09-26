@@ -41,6 +41,7 @@ public class RequestBuilder {
     }
 
     public HttpRequestMessage<Optional<String>> build() {
+        @SuppressWarnings("unchecked")
         final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
         if (!this.queryParameters.isEmpty()) {
