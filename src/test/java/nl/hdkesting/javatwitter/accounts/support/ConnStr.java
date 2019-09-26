@@ -12,5 +12,9 @@ public class ConnStr {
     public static String H2() {
         return H2("data_account.sql");
     }
+
+    public static String H2_noInit() {
+        return "jdbc:h2:mem:accountdb";
+    }
 }
 

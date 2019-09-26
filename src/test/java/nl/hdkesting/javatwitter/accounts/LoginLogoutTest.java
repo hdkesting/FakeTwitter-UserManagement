@@ -5,7 +5,10 @@ import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import nl.hdkesting.javatwitter.accounts.services.TokenService;
 import nl.hdkesting.javatwitter.accounts.support.ConnStr;
 import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
+import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -21,23 +24,30 @@ public class LoginLogoutTest {
     private static final String SAMPLE_EMAIL = "testsample@invalid.com";
     private static final String SAMPLE_PASSWORD = "Pa$$w0rd";
 
-    //@Test apparently H2 resets frequently, thereby forgetting the registration
+    @Test //apparently H2 resets frequently, thereby forgetting the registration
     public void registerLoginValidateAndLogout() {
-        initializeTest();
+        try (Connection connection = DriverManager.getConnection(ConnStr.H2())) {
+            // I hope that by keeping one connection open, the other connections will use the *same* data
+            initializeTest();
 
-        register();
+            register();
 
-        try {
-            String token = login();
+            try {
+                String token = login();
 
-            if (!verifyToken(token, true)) {
+                if (!verifyToken(token, true)) {
+                    fail();
+                } else {
+                    logout(token);
+
+                    assertFalse(verifyToken(token, false));
+                }
+            } catch (InvalidApplicationException ex) {
+                ex.printStackTrace();
                 fail();
-            } else {
-                logout(token);
-
-                assertFalse(verifyToken(token, false));
             }
-        } catch (InvalidApplicationException ex) {
+        } catch (SQLException ex) {
+            ex.printStackTrace();
             fail();
         }
     }
@@ -139,7 +149,7 @@ public class LoginLogoutTest {
     private void initializeTest() {
         if (this.accountService == null) {
             try {
-                this.accountService = new AccountService(ConnStr.H2());
+                this.accountService = new AccountService(ConnStr.H2_noInit());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -147,7 +157,7 @@ public class LoginLogoutTest {
 
         if (this.tokenService == null) {
             try {
-                this.tokenService = new TokenService(ConnStr.H2());
+                this.tokenService = new TokenService(ConnStr.H2_noInit());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
