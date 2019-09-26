@@ -131,19 +131,23 @@ public class AccountService {
             ResultSet result = queryStatement.executeQuery();
             if (result.next()) {
                 // found an email match, but is the password correct?
+                int id = result.getInt(1);
                 String hashedPassword = result.getString(2);
                 if (Encryptor.validate(cleartextPassword, hashedPassword)) {
                     // yes, the password is correct!
                     // so update "latest login"
-                    updateStatement.setDate(1, new java.sql.Date(new java.util.Date().getTime()));
+                    updateStatement.setDate(1, TokenService.getNow());
+                    updateStatement.setInt(2, id);
                     updateStatement.executeUpdate();
 
                     // and return the (positive) account id
-                    int id = result.getInt(1);
                     return id;
                 }
+            } else {
+                Logger.getGlobal().warning("No account found for " + email);
             }
         } catch (SQLException ex) {
+            ex.printStackTrace();
             Logger.getGlobal().severe(ex.toString());
         }
 

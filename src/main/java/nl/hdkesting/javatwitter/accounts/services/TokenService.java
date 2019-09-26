@@ -28,12 +28,15 @@ public class TokenService {
         }
     }
 
+    /**
+     * Cleanup all expired tokens by removing them from the database.
+     * To be called by a timer-based function.
+     */
     public void cleanupExpiredTokens() {
         String query = "DELETE FROM Tokens WHERE ExpiryDate < ?";
         try (Connection connection = DriverManager.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
-            Date now = new Date(new java.util.Date().getTime());
-            statement.setDate(1, now);
+            statement.setDate(1, getNow());
 
             int cnt = statement.executeUpdate();
             Logger.getGlobal().info("Removed " + cnt + " expired tokens.");
@@ -42,6 +45,11 @@ public class TokenService {
         }
     }
 
+    /**
+     * Creates (and stores) a new token with the default expiry timespan.
+     * @param accountId
+     * @return
+     */
     public String createToken(int accountId) {
         String query = "INSERT INTO Tokens (token, accountid, expirydate) VALUES (?, ?, ?)";
         String token = generateToken();
@@ -64,6 +72,10 @@ public class TokenService {
         return null;
     }
 
+    /**
+     * Revoke a token by removing it from the database.
+     * @param token
+     */
     public void revokeToken(String token) {
         String query = "DELETE FROM Tokens WHERE token = ?";
 
@@ -78,6 +90,42 @@ public class TokenService {
         }
     }
 
+    public boolean tokenIsValid(String token) {
+        String query = "SELECT 1 FROM Tokens WHERE token=? AND expirydate>=?";
+
+        try (Connection connection = DriverManager.getConnection(this.connectionString);
+             PreparedStatement statement = connection.prepareStatement(query);) {
+            statement.setString(1, token);
+            statement.setDate(2, getNow());
+
+            ResultSet result = statement.executeQuery();
+            if (result.next()) {
+                // found a matching, not-expired token!
+                updateExpiry(token, connection);
+                return true;
+            } else {
+                revokeToken(token);
+                return false;
+            }
+        } catch (SQLException ex) {
+            Logger.getGlobal().severe(ex.toString());
+        }
+
+        return false;
+    }
+
+    private void updateExpiry(String token, Connection connection) {
+        String query = "UPDATE Tokens SET expirydate = ? WHERE token = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setDate(1, getNewExpiryDate());
+            statement.setString(2, token);
+
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private static String generateToken() {
         SecureRandom rng = new SecureRandom();
         byte[] token = new byte[30];
@@ -88,5 +136,9 @@ public class TokenService {
 
     private static Date getNewExpiryDate() {
         return new Date(new java.util.Date().getTime() + TIMEOUT_MINUTES * 60 * 1000);
+    }
+
+    public static Date getNow() {
+        return new Date(new java.util.Date().getTime());
     }
 }

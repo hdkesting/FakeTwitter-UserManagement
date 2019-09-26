@@ -23,7 +23,7 @@ public class EmailExistsTest {
     // NB: do note that testing happens against an in-memory H2 database, while live runs against Azure SqlServer.
 
     // @BeforeEach or @BeforeAll - both do NOT work in GitHub CI
-    public void initializeTest() {
+    private void initializeTest() {
         if (this.accountService == null) {
             try {
                 this.accountService = new AccountService(ConnStr.H2());
@@ -83,7 +83,7 @@ public class EmailExistsTest {
             final HttpResponseMessage ret = new EmailExists(this.accountService).run(req, context);
 
             // ASSERT
-            assertEquals(ret.getStatus(), expectedResponse);
+            assertEquals(expectedResponse, ret.getStatus());
             return true;
         }
         catch (InvalidApplicationException ex) {
