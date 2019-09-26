@@ -4,10 +4,7 @@ import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import nl.hdkesting.javatwitter.accounts.services.TokenService;
 import nl.hdkesting.javatwitter.accounts.support.ConnStr;
-import nl.hdkesting.javatwitter.accounts.support.HttpResponseMessageMock;
 import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -16,8 +13,6 @@ import java.util.logging.Logger;
 import javax.management.InvalidApplicationException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 public class LoginLogoutTest {
     private AccountService accountService;
