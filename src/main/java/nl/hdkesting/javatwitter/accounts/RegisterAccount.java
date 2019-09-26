@@ -73,6 +73,7 @@ public class RegisterAccount {
         }
 
         // and finally do it
+        context.getLogger().info("Registering new account for " + newAccount.getEmail());
         if (createAccount(newAccount)) {
             return request.createResponseBuilder(HttpStatus.OK).build();
         }
