@@ -37,6 +37,7 @@ public class RegisterAccount {
         context.getLogger().info("HTTP trigger processing a request for RegisterAccount");
         if (this.accountService == null) {
             // shouldn't happen
+            // validation in constructor is enough
             context.getLogger().severe("RegisterAccount: Account service is NULL!");
             throw new NullPointerException("Account service is NULL!");
         }
@@ -45,9 +46,11 @@ public class RegisterAccount {
         Optional<String> json = request.getBody();
         if (!json.isPresent()) {
             // 417 EXPECTATION FAILED
+            // 417 is about Expect HTTP header, so I'd rather use 400, pls see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/417
             return request.createResponseBuilder(HttpStatus.EXPECTATION_FAILED).body("E01 - Please pass an account to register.").build();
         }
 
+        // Most likely it's possible to receive AccountRegistration instance inside of HttpRequestMessage to avoid manual deserialization
         Gson gson = new Gson();
         AccountRegistration newAccount = gson.fromJson(json.get(), AccountRegistration.class);
 
@@ -57,6 +60,7 @@ public class RegisterAccount {
         }
 
         if (!emailIsAvailable(newAccount.getEmail())) {
+            // Once we have API defined and documented, we need to return errors in JSON format
             return request.createResponseBuilder(HttpStatus.EXPECTATION_FAILED).body("E03 - There already is an account for this email address.").build();
         }
 
@@ -97,6 +101,7 @@ public class RegisterAccount {
         }
     }
 
+    // names of methods returning boolean don't conform to standards. I'd do isNickValid
     private boolean seemsValidNick(String nickname) {
         return nickname != null && nickname.matches("^[a-zA-Z0-9]{3,}$");
     }
@@ -117,6 +122,8 @@ public class RegisterAccount {
     private boolean createAccount(AccountRegistration account) {
         // change cleartext into salted hash
         account.setPassword(Encryptor.encrypt(account.getPassword()));
+        // It's not a good practice to return boolean to indicate result of operation.
+        // Ideally, method should return void and throw Exception in case of error.
         return this.accountService.createAccount(account);
     }
 }

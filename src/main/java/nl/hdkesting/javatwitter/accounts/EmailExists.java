@@ -51,6 +51,7 @@ public class EmailExists {
 
         if (this.accountService.emailExists(email)) {
             // 200 OK
+            // Please make sure that INFO log level is proper for various log messages used in these functions
             context.getLogger().info("The supplied email address (" + email + ") IS known.");
             return request.createResponseBuilder(HttpStatus.OK).build();
         }

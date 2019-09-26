@@ -19,10 +19,12 @@ public class AccountService {
         System.setProperty("java.net.preferIPv6Addresses", "true");
         this.connectionString = connStr;
 
+        // Why create this test connection, if right after that another one is created?
         try (Connection connection = DriverManager.getConnection(this.connectionString)) {
             // great, there is connection!
             Logger.getGlobal().info("AccountService: There IS a database connection, using: " + this.connectionString);
         } catch (SQLException ex) {
+            // if this exception's details are going to be exposed in HTTP response, it might be a security issue
             throw ex;
         }
     }
@@ -30,6 +32,8 @@ public class AccountService {
     public boolean emailExists(String emailAddress) throws InvalidApplicationException {
         String query = "SELECT 1 FROM Accounts WHERE email=?";
 
+        // In general, would be nice to use connection pool instead of single connections
+        // I see there's a way to do that in .NET for azure functions, but couldn't google one for Java..
         try (Connection connection = DriverManager.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, emailAddress);
@@ -40,6 +44,8 @@ public class AccountService {
         }
         catch (SQLException ex) {
             ex.printStackTrace();
+            // Exception below belongs to Java's JMX package, which is used mostly for
+            // application monitoring: https://en.wikipedia.org/wiki/Java_Management_Extensions
             throw new InvalidApplicationException(ex);
         }
     }
@@ -60,6 +66,9 @@ public class AccountService {
         }
     }
 
+    // this method is a good candidate for breaking down into smaller functions.
+    // having a lot of code in try/catch is also not a good practice
+    // only something that actually can throw SQLException should be surrounded by try/catch
     public String getFreeNickname(String nickname) throws InvalidApplicationException {
         String query = "SELECT nickname FROM Accounts WHERE nickname like ?";
         try (Connection connection = DriverManager.getConnection(this.connectionString);

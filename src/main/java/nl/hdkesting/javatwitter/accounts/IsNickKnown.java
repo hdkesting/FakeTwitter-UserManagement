@@ -8,6 +8,9 @@ import nl.hdkesting.javatwitter.accounts.services.AccountService;
 
 import javax.management.InvalidApplicationException;
 
+// how's this function is going to be used, given that GetFreeNickname either confirms that proposed nickname is available
+// or suggests another one?
+
 /**
  * A function to check whether a proposed nickname is already known.
  * It returns a status 200 when it is known, of 404 when it isn't.
@@ -16,6 +19,7 @@ public class IsNickKnown {
     private AccountService accountService;
 
     public IsNickKnown(AccountService accountService) {
+        // there's a nice tool Objects.requireNotNull(object, "error message") that does exactly this
         if (accountService == null) {
             throw new IllegalArgumentException("accountService parameter should not be null.");
         }
@@ -24,6 +28,7 @@ public class IsNickKnown {
     }
 
     public IsNickKnown() throws SQLException {
+        // does Azure provide some proper way to inject dependencies?
         this(new AccountService());
         // Fake DI
     }

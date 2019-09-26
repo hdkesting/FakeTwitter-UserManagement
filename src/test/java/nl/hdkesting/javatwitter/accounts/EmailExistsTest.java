@@ -49,6 +49,7 @@ public class EmailExistsTest {
         assert performTest("", HttpStatus.EXPECTATION_FAILED);
     }
 
+    // Junit 5 already supports parametrized tests
     private boolean performTest(String emailToTest, HttpStatus expectedResponse) {
         // ARRANGE
         initializeTest();
