@@ -3,20 +3,16 @@ package nl.hdkesting.javatwitter.accounts;
 import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import nl.hdkesting.javatwitter.accounts.support.ConnStr;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Test;
 
 import javax.management.InvalidApplicationException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 public class FreeNickTest {
     private AccountService accountService;
@@ -53,30 +49,13 @@ public class FreeNickTest {
         // ARRANGE
         initializeTest();
 
-        @SuppressWarnings("unchecked")
-        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
-
-        final Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("nick", nickToTest);
-        doReturn(queryParams).when(req).getQueryParameters();
-
-        final Optional<String> queryBody = Optional.empty();
-        doReturn(queryBody).when(req).getBody();
-
-        doAnswer(new Answer<HttpResponseMessage.Builder>() {
-            @Override
-            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
-                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
-                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
-            }
-        }).when(req).createResponseBuilder(any(HttpStatus.class));
-
-        final ExecutionContext context = mock(ExecutionContext.class);
-        doReturn(Logger.getGlobal()).when(context).getLogger();
+        final HttpRequestMessage<Optional<String>> req = new RequestBuilder()
+                .addQueryParameter("nick", nickToTest)
+                .build();
 
         // ACT
         try {
-            final HttpResponseMessage ret = new GetFreeNickname(this.accountService).run(req, context);
+            final HttpResponseMessage ret = new GetFreeNickname(this.accountService).run(req, RequestBuilder.getMockContext());
 
             // ASSERT
             assertEquals(ret.getStatus(), HttpStatus.OK);

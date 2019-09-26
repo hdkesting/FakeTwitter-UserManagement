@@ -4,7 +4,8 @@ import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import nl.hdkesting.javatwitter.accounts.services.TokenService;
 import nl.hdkesting.javatwitter.accounts.support.ConnStr;
-import org.junit.jupiter.api.Test;
+import nl.hdkesting.javatwitter.accounts.support.HttpResponseMessageMock;
+import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -48,27 +49,13 @@ public class LoginLogoutTest {
 
     private void logout(String token) {
         Logger.getGlobal().info("Logging out");
-        @SuppressWarnings("unchecked")
-        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put(TokenService.AUTHORIZE_HEADER, TokenService.AUTHORIZE_PREFIX + token);
-        doReturn(headers).when(req).getHeaders();
-
-        doAnswer(new Answer<HttpResponseMessage.Builder>() {
-            @Override
-            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
-                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
-                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
-            }
-        }).when(req).createResponseBuilder(any(HttpStatus.class));
-
-        // create execution context
-        final ExecutionContext context = mock(ExecutionContext.class);
-        doReturn(Logger.getGlobal()).when(context).getLogger();
+        HttpRequestMessage<Optional<String>> req = new RequestBuilder()
+                .addAuthorizeHeader(token)
+                .build();
 
         try {
-            final HttpResponseMessage ret = new Logout(this.tokenService).run(req, context);
+            final HttpResponseMessage ret = new Logout(this.tokenService).run(req, RequestBuilder.getMockContext());
 
             assertEquals(HttpStatus.NO_CONTENT, ret.getStatus());
         } catch (InvalidApplicationException ex) {
@@ -79,27 +66,13 @@ public class LoginLogoutTest {
 
     private boolean verifyToken(String token, boolean expectSuccess) {
         Logger.getGlobal().info("verifying token " + token);
-        @SuppressWarnings("unchecked")
-        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put(TokenService.AUTHORIZE_HEADER, TokenService.AUTHORIZE_PREFIX + token);
-        doReturn(headers).when(req).getHeaders();
-
-        doAnswer(new Answer<HttpResponseMessage.Builder>() {
-            @Override
-            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
-                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
-                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
-            }
-        }).when(req).createResponseBuilder(any(HttpStatus.class));
-
-        // create execution context
-        final ExecutionContext context = mock(ExecutionContext.class);
-        doReturn(Logger.getGlobal()).when(context).getLogger();
+        HttpRequestMessage<Optional<String>> req = new RequestBuilder()
+                .addAuthorizeHeader(token)
+                .build();
 
         try {
-            final HttpResponseMessage ret = new ValidateLogin(this.tokenService).run(req, context);
+            final HttpResponseMessage ret = new ValidateLogin(this.tokenService).run(req, RequestBuilder.getMockContext());
 
             if (expectSuccess) {
                 assertEquals(HttpStatus.OK, ret.getStatus());
@@ -117,33 +90,20 @@ public class LoginLogoutTest {
 
     private String login() throws InvalidApplicationException {
         Logger.getGlobal().info("Logging in");
-        @SuppressWarnings("unchecked")
-        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
-        final Optional<String> queryBody = Optional.of("{ \"email\": \"" + SAMPLE_EMAIL + "\"," +
-                "\"password\": \"" + SAMPLE_PASSWORD + "\"" +
-                "}");
-        doReturn(queryBody).when(req).getBody();
-
-        // create response
-        doAnswer(new Answer<HttpResponseMessage.Builder>() {
-            @Override
-            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
-                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
-                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
-            }
-        }).when(req).createResponseBuilder(any(HttpStatus.class));
-
-        // create execution context
-        final ExecutionContext context = mock(ExecutionContext.class);
-        doReturn(Logger.getGlobal()).when(context).getLogger();
+        HttpRequestMessage<Optional<String>> req = new RequestBuilder()
+                .addBody("{ \"email\": \"" + SAMPLE_EMAIL + "\"," +
+                        "\"password\": \"" + SAMPLE_PASSWORD + "\"" +
+                        "}")
+                .build();
 
         try {
-            final HttpResponseMessage ret = new Login(this.accountService, this.tokenService).run(req, context);
+            final HttpResponseMessage ret = new Login(this.accountService, this.tokenService).run(req, RequestBuilder.getMockContext());
 
             Object body = ret.getBody();
-            if (body == null) body="null";
+            if (body == null) body = "(null)";
             Logger.getGlobal().info(body.toString());
+
             assertEquals(HttpStatus.OK, ret.getStatus());
             String token = ret.getHeader(TokenService.AUTHORIZE_HEADER);
             if (token == null || token.length() <= TokenService.AUTHORIZE_PREFIX.length()) {
@@ -162,32 +122,17 @@ public class LoginLogoutTest {
     // register an account
     private void register() {
         Logger.getGlobal().info("Registering");
-        @SuppressWarnings("unchecked")
-        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
 
-        // add body to request
-        final Optional<String> queryBody = Optional.of("{ \"email\": \"" + SAMPLE_EMAIL + "\"," +
-                "\"password\": \"" + SAMPLE_PASSWORD + "\", " +
-                "\"fullname\": \"Example Name\", " +
-                "\"nickname\": \"somebody\" " +
-                "}");
-        doReturn(queryBody).when(req).getBody();
-
-        // create response
-        doAnswer(new Answer<HttpResponseMessage.Builder>() {
-            @Override
-            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
-                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
-                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
-            }
-        }).when(req).createResponseBuilder(any(HttpStatus.class));
-
-        // create execution context
-        final ExecutionContext context = mock(ExecutionContext.class);
-        doReturn(Logger.getGlobal()).when(context).getLogger();
+        HttpRequestMessage<Optional<String>> req = new RequestBuilder()
+                .addBody("{ \"email\": \"" + SAMPLE_EMAIL + "\"," +
+                        "\"password\": \"" + SAMPLE_PASSWORD + "\", " +
+                        "\"fullname\": \"Example Name\", " +
+                        "\"nickname\": \"somebody\" " +
+                        "}")
+                .build();
 
         try {
-            final HttpResponseMessage ret = new RegisterAccount(this.accountService).run(req, context);
+            final HttpResponseMessage ret = new RegisterAccount(this.accountService).run(req, RequestBuilder.getMockContext());
 
             assertEquals(HttpStatus.OK, ret.getStatus());
         } catch (InvalidApplicationException ex) {

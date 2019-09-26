@@ -3,19 +3,15 @@ package nl.hdkesting.javatwitter.accounts;
 import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import nl.hdkesting.javatwitter.accounts.support.ConnStr;
+import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Logger;
 
 import javax.management.InvalidApplicationException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 public class EmailExistsTest {
     private AccountService accountService;
@@ -52,35 +48,13 @@ public class EmailExistsTest {
         // ARRANGE
         initializeTest();
 
-        // create incoming request
-        @SuppressWarnings("unchecked")
-        final HttpRequestMessage<Optional<String>> req = mock(HttpRequestMessage.class);
-
-        // add parameter(s) to request
-        final Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("mail", emailToTest);
-        doReturn(queryParams).when(req).getQueryParameters();
-
-        // add (empty) body to request
-        final Optional<String> queryBody = Optional.empty();
-        doReturn(queryBody).when(req).getBody();
-
-        // create response
-        doAnswer(new Answer<HttpResponseMessage.Builder>() {
-            @Override
-            public HttpResponseMessage.Builder answer(InvocationOnMock invocation) {
-                HttpStatus status = (HttpStatus) invocation.getArguments()[0];
-                return new HttpResponseMessageMock.HttpResponseMessageBuilderMock().status(status);
-            }
-        }).when(req).createResponseBuilder(any(HttpStatus.class));
-
-        // create execution context
-        final ExecutionContext context = mock(ExecutionContext.class);
-        doReturn(Logger.getGlobal()).when(context).getLogger();
+        final HttpRequestMessage<Optional<String>> req = new RequestBuilder()
+                .addQueryParameter("mail", emailToTest)
+                .build();
 
         // ACT
         try {
-            final HttpResponseMessage ret = new EmailExists(this.accountService).run(req, context);
+            final HttpResponseMessage ret = new EmailExists(this.accountService).run(req, RequestBuilder.getMockContext());
 
             // ASSERT
             assertEquals(expectedResponse, ret.getStatus());
