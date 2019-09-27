@@ -4,10 +4,12 @@ import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import nl.hdkesting.javatwitter.accounts.support.ConnStr;
 import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Logger;
 
 import javax.management.InvalidApplicationException;
 
@@ -29,27 +31,17 @@ public class EmailExistsTest {
         }
     }
 
-    @Test
-    public void testEmailExists_unknownEmail() throws Exception {
-        assert performTest("unknown@invalid.com", HttpStatus.NOT_FOUND);
-    }
+    @ParameterizedTest()
+    @CsvSource({"unknown@invalid.com,NOT_FOUND", "sample@example.com,OK", ",BAD_REQUEST"})
+    public void performTest(String input, String expected) {
+        Logger.getGlobal().info("Testing address '" + input + "' for status " + expected);
+        HttpStatus expectedStatus = HttpStatus.valueOf(expected);
 
-    @Test
-    public void testEmailExists_knownEmail() throws Exception {
-        assert performTest("sample@example.com", HttpStatus.OK);
-    }
-
-    @Test
-    public void testEmailExists_emptyEmail() throws Exception {
-        assert performTest("", HttpStatus.BAD_REQUEST);
-    }
-
-    private boolean performTest(String emailToTest, HttpStatus expectedResponse) {
         // ARRANGE
         initializeTest();
 
         final HttpRequestMessage<Optional<String>> req = new RequestBuilder()
-                .addQueryParameter("mail", emailToTest)
+                .addQueryParameter("mail", input)
                 .build();
 
         // ACT
@@ -57,14 +49,11 @@ public class EmailExistsTest {
             final HttpResponseMessage ret = new EmailExists(this.accountService).run(req, RequestBuilder.getMockContext());
 
             // ASSERT
-            assertEquals(expectedResponse, ret.getStatus());
-            return true;
+            assertEquals(expectedStatus, ret.getStatus());
         }
         catch (InvalidApplicationException ex) {
             ex.printStackTrace();
             fail();
         }
-
-        return false;
     }
 }
