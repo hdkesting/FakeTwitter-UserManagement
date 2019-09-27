@@ -1,10 +1,9 @@
-name: Java CI
+name: Java CI test develop
 
 on: 
   push:
     branches:
-    - master
-    - release/*
+    - develop
 
 jobs:
   build:
@@ -18,4 +17,4 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      run: mvn package --file pom.xml
+      run: mvn test --file pom.xml
