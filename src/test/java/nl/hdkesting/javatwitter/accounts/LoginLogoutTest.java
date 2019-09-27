@@ -2,13 +2,13 @@ package nl.hdkesting.javatwitter.accounts;
 
 import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
+import nl.hdkesting.javatwitter.accounts.services.ConnectionPool;
 import nl.hdkesting.javatwitter.accounts.services.TokenService;
 import nl.hdkesting.javatwitter.accounts.support.ConnStr;
 import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -24,9 +24,9 @@ public class LoginLogoutTest {
     private static final String SAMPLE_EMAIL = "testsample@invalid.com";
     private static final String SAMPLE_PASSWORD = "Pa$$w0rd";
 
-    @Test //apparently H2 resets frequently, thereby forgetting the registration
+    @Test
     public void registerLoginValidateAndLogout() {
-        try (Connection connection = DriverManager.getConnection(ConnStr.H2())) {
+        try (Connection connection = ConnectionPool.getConnection(ConnStr.H2())) {
             // I hope that by keeping one connection open, the other connections will use the *same* data
             initializeTest();
 

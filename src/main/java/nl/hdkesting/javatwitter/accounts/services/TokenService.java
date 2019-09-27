@@ -27,7 +27,7 @@ public class TokenService {
      */
     public void cleanupExpiredTokens() {
         String query = "DELETE FROM Tokens WHERE ExpiryDate < ?";
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setDate(1, getNow());
 
@@ -48,7 +48,7 @@ public class TokenService {
         String token = generateToken();
         Date expiry = getNewExpiryDate();
 
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, token);
             statement.setInt(2, accountId);
@@ -72,7 +72,7 @@ public class TokenService {
     public void revokeToken(String token) {
         String query = "DELETE FROM Tokens WHERE token = ?";
 
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, token);
 
@@ -86,7 +86,7 @@ public class TokenService {
     public boolean tokenIsValid(String token) {
         String query = "SELECT 1 FROM Tokens WHERE token=? AND expirydate>=?";
 
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, token);
             statement.setDate(2, getNow());
@@ -128,6 +128,7 @@ public class TokenService {
     }
 
     private static Date getNewExpiryDate() {
+        // "time" is in milliseconds
         return new Date(new java.util.Date().getTime() + TIMEOUT_MINUTES * 60 * 1000);
     }
 

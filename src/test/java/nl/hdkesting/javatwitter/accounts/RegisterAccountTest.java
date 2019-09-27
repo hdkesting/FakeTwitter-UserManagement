@@ -7,6 +7,7 @@ import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,10 +24,10 @@ public class RegisterAccountTest {
         initializeTest();
 
         HttpRequestMessage<Optional<String>> req = new RequestBuilder()
-                .addBody("{ \"email\": \"somebody@example.com\"," +
+                .addBody("{ \"email\": \"somebodynew@example.com\"," +
                         "\"password\": \"Geheim01\", " +
                         "\"fullname\": \"Some Body\", " +
-                        "\"nickname\": \"somebody\" " +
+                        "\"nickname\": \"somebodynew\" " +
                         "}")
                 .build();
 
@@ -35,6 +36,9 @@ public class RegisterAccountTest {
             final HttpResponseMessage ret = new RegisterAccount(this.accountService).run(req, RequestBuilder.getMockContext());
 
             // ASSERT
+            Object body = ret.getBody();
+            if (body == null) body = "(no body)";
+            Logger.getGlobal().info(body.toString());
             assertEquals(HttpStatus.OK, ret.getStatus());
         }
         catch (InvalidApplicationException ex) {
@@ -52,7 +56,7 @@ public class RegisterAccountTest {
                 .addBody("{ \"email\": \"sample@example.com\"," +
                         "\"password\": \"Geheim01\", " +
                         "\"fullname\": \"Some Body\", " +
-                        "\"nickname\": \"somebody\" " +
+                        "\"nickname\": \"somebody2\" " +
                         "}")
                 .build();
 

@@ -33,11 +33,6 @@ public class RegisterAccount {
             final ExecutionContext context) throws InvalidApplicationException {
 
         context.getLogger().fine("HTTP trigger processing a request for RegisterAccount");
-        if (this.accountService == null) {
-            // shouldn't happen
-            context.getLogger().severe("RegisterAccount: Account service is NULL!");
-            throw new NullPointerException("Account service is NULL!");
-        }
 
         // get JSON body and parse to "account object"
         Optional<String> json = request.getBody();

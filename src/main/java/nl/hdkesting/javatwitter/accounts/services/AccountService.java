@@ -16,14 +16,13 @@ public class AccountService {
     }
 
     public AccountService(String connStr) throws SQLException {
-        System.setProperty("java.net.preferIPv6Addresses", "true");
         this.connectionString = connStr;
     }
 
     public boolean emailExists(String emailAddress) throws InvalidApplicationException {
         String query = "SELECT 1 FROM Accounts WHERE email=?";
 
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, emailAddress);
 
@@ -39,7 +38,7 @@ public class AccountService {
 
     public boolean nicknameIsAvailable(String nickname) throws InvalidApplicationException {
         String query = "SELECT 1 FROM Accounts WHERE nickname=?";
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, nickname);
 
@@ -58,7 +57,7 @@ public class AccountService {
         List<String> knownnicks = new ArrayList<>();
 
         String query = "SELECT nickname FROM Accounts WHERE nickname like ?";
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, nickname + "%");
 
@@ -97,7 +96,7 @@ public class AccountService {
         }
 
         String query = "INSERT INTO Accounts (email, password, fullname, nickname, latestlogin) VALUES (?,?,?,?,null)";
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, account.getEmail());
             statement.setString(2, account.getPassword());
@@ -116,7 +115,7 @@ public class AccountService {
         String queryPassword = "SELECT id, password FROM Accounts WHERE email=?";
         String updateLogin = "UPDATE Accounts SET latestlogin=? WHERE id=?";
 
-        try (Connection connection = DriverManager.getConnection(this.connectionString);
+        try (Connection connection = ConnectionPool.getConnection(this.connectionString);
              PreparedStatement queryStatement = connection.prepareStatement(queryPassword);
              PreparedStatement updateStatement = connection.prepareStatement(updateLogin);) {
 
