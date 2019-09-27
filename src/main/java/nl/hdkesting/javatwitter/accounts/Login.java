@@ -19,9 +19,8 @@ public class Login {
     private TokenService tokenService;
 
     public Login(AccountService accountService, TokenService tokenService) {
-        if (accountService == null || tokenService == null) {
-            throw new IllegalArgumentException("accountService and tokenService should not be null.");
-        }
+        Objects.requireNonNull(accountService, "accountService should not be null.");
+        Objects.requireNonNull(tokenService, "tokenService should not be null.");
 
         this.accountService = accountService;
         this.tokenService = tokenService;
@@ -41,8 +40,8 @@ public class Login {
         // get JSON body and parse to "account object"
         Optional<String> json = request.getBody();
         if (!json.isPresent()) {
-            // 417 EXPECTATION FAILED
-            return request.createResponseBuilder(HttpStatus.EXPECTATION_FAILED).body("E01 - Please pass login details.").build();
+            // 400 BAD REQUEST
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("E01 - Please pass login details.").build();
         }
 
         Gson gson = new Gson();
@@ -53,7 +52,7 @@ public class Login {
             Logger.getGlobal().severe("Failed to parse JSON: " + json.get());
             Logger.getGlobal().severe(ex.toString());
 
-            return request.createResponseBuilder(HttpStatus.EXPECTATION_FAILED).body("E02 - Please pass correct login details.").build();
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("E02 - Please pass correct login details.").build();
         }
 
         int accountId = this.accountService.getAccountIdByLogin(details.getEmail(), details.getPassword());

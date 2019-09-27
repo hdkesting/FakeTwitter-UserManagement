@@ -11,14 +11,13 @@ import javax.management.InvalidApplicationException;
 /**
  * A Function to get a free nickname, based on the supplied value.
  * It returns the value when it is free, or a generated free one.
+ * This function can be used in the registration process.
  */
 public class GetFreeNickname {
     private AccountService accountService;
 
     public GetFreeNickname(AccountService accountService) {
-        if (accountService == null) {
-            throw new IllegalArgumentException("accountService parameter should not be null.");
-        }
+        Objects.requireNonNull(accountService, "accountService parameter should not be null.");
 
         this.accountService = accountService;
     }
@@ -36,16 +35,11 @@ public class GetFreeNickname {
 
         // Parse query parameter
         String nick = request.getQueryParameters().get("nick");
-        context.getLogger().info("HTTP trigger processed a request for GetFreeNickname?nick=" + nick);
+        context.getLogger().fine("HTTP trigger processed a request for GetFreeNickname?nick=" + nick);
 
         if (nick == null || nick.trim().isEmpty()) {
-            // 417 EXPECTATION FAILED
-            return request.createResponseBuilder(HttpStatus.EXPECTATION_FAILED).body("Please pass a nickname to check.").build();
-        }
-
-        if (this.accountService == null) {
-            context.getLogger().severe("GetFreeNickname: Account service is NULL!");
-            throw new NullPointerException("Account service is NULL!");
+            // 400 BAD REQUEST
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Please pass a nickname to check.").build();
         }
 
         if (this.accountService.nicknameIsAvailable(nick)) {

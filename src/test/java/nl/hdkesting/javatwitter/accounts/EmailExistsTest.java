@@ -41,7 +41,7 @@ public class EmailExistsTest {
 
     @Test
     public void testEmailExists_emptyEmail() throws Exception {
-        assert performTest("", HttpStatus.EXPECTATION_FAILED);
+        assert performTest("", HttpStatus.BAD_REQUEST);
     }
 
     private boolean performTest(String emailToTest, HttpStatus expectedResponse) {

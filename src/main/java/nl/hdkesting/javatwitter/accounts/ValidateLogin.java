@@ -9,15 +9,14 @@ import nl.hdkesting.javatwitter.accounts.services.TokenService;
 import javax.management.InvalidApplicationException;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ValidateLogin {
     private TokenService tokenService;
 
     public ValidateLogin(TokenService tokenService) {
-        if (tokenService == null) {
-            throw new IllegalArgumentException("accountService and tokenService should not be null.");
-        }
+        Objects.requireNonNull(tokenService, "tokenService should not be null.");
 
         this.tokenService = tokenService;
     }

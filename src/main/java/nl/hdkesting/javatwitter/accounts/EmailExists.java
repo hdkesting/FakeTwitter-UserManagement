@@ -2,6 +2,7 @@ package nl.hdkesting.javatwitter.accounts;
 
 import java.sql.SQLException;
 import java.util.*;
+
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
@@ -16,10 +17,8 @@ public class EmailExists {
     private AccountService accountService;
 
     public EmailExists(AccountService accountService) {
-        if (accountService == null) {
-            throw new IllegalArgumentException("accountService parameter should not be null.");
-        }
-        
+        Objects.requireNonNull(accountService, "accountService parameter should not be null.");
+
         this.accountService = accountService;
     }
 
@@ -36,17 +35,12 @@ public class EmailExists {
 
         // Parse query parameter
         String email = request.getQueryParameters().get("mail");
-        context.getLogger().info("HTTP trigger processed a request for EmailExists?mail=" + email);
+        context.getLogger().fine("HTTP trigger processed a request for EmailExists?mail=" + email);
 
         if (email == null || email.trim().isEmpty()) {
-            // 417 EXPECTATION FAILED
+            // 400 BAD REQUEST
             context.getLogger().warning("No email address was supplied.");
-            return request.createResponseBuilder(HttpStatus.EXPECTATION_FAILED).body("Please pass an email address to check.").build();
-        }
-
-        if (this.accountService == null) {
-            context.getLogger().severe("EmailExists: Account service is NULL!");
-            throw new NullPointerException("Account service is NULL!");
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Please pass an email address to check.").build();
         }
 
         if (this.accountService.emailExists(email)) {

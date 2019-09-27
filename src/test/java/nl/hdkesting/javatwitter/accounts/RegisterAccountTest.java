@@ -61,7 +61,7 @@ public class RegisterAccountTest {
             final HttpResponseMessage ret = new RegisterAccount(this.accountService).run(req, RequestBuilder.getMockContext());
 
             // ASSERT
-            assertEquals(HttpStatus.EXPECTATION_FAILED, ret.getStatus());
+            assertEquals(HttpStatus.BAD_REQUEST, ret.getStatus());
         }
         catch (InvalidApplicationException ex) {
             ex.printStackTrace();

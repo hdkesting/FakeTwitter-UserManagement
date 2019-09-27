@@ -19,13 +19,6 @@ public class TokenService {
     public TokenService(String connStr) throws SQLException {
         System.setProperty("java.net.preferIPv6Addresses", "true");
         this.connectionString = connStr;
-
-        try (Connection connection = DriverManager.getConnection(this.connectionString)) {
-            // great, there is connection!
-            Logger.getGlobal().info("TokenService: There IS a database connection, using: " + this.connectionString);
-        } catch (SQLException ex) {
-            throw ex;
-        }
     }
 
     /**

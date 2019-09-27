@@ -18,13 +18,6 @@ public class AccountService {
     public AccountService(String connStr) throws SQLException {
         System.setProperty("java.net.preferIPv6Addresses", "true");
         this.connectionString = connStr;
-
-        try (Connection connection = DriverManager.getConnection(this.connectionString)) {
-            // great, there is connection!
-            Logger.getGlobal().info("AccountService: There IS a database connection, using: " + this.connectionString);
-        } catch (SQLException ex) {
-            throw ex;
-        }
     }
 
     public boolean emailExists(String emailAddress) throws InvalidApplicationException {
@@ -61,39 +54,40 @@ public class AccountService {
     }
 
     public String getFreeNickname(String nickname) throws InvalidApplicationException {
+
+        List<String> knownnicks = new ArrayList<>();
+
         String query = "SELECT nickname FROM Accounts WHERE nickname like ?";
         try (Connection connection = DriverManager.getConnection(this.connectionString);
              PreparedStatement statement = connection.prepareStatement(query);) {
             statement.setString(1, nickname + "%");
 
             ResultSet result = statement.executeQuery();
-            List<String> knownnicks = new ArrayList<>();
             while (result.next()) {
                 knownnicks.add(result.getString(1));
             }
-
-            int min = 100;
-            int range = 900;
-            if (knownnicks.size() > 400) {
-                min = 10_000;
-                range = 90_000;
-            }
-
-            while (true) {
-                // min and range are chosen to always give 3 digit or 5 digit values. So no need to add prefix 0's
-                int number = (int)(Math.random() * range + min);
-                String num = Integer.toString(number);
-                String potential = nickname + num;
-
-                if (knownnicks.stream().noneMatch(s -> s.equalsIgnoreCase(potential))) {
-                    // found one that doesn't exist yet!
-                    return potential;
-                }
-            }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             ex.printStackTrace();
             throw new InvalidApplicationException(ex);
+        }
+
+        int min = 100;
+        int range = 900;
+        if (knownnicks.size() > 400) {
+            min = 10_000;
+            range = 90_000;
+        }
+
+        while (true) {
+            // min and range are chosen to always give 3 digit or 5 digit values. So no need to add prefix 0's
+            int number = (int) (Math.random() * range + min);
+            String num = Integer.toString(number);
+            String potential = nickname + num;
+
+            if (knownnicks.stream().noneMatch(s -> s.equalsIgnoreCase(potential))) {
+                // found one that doesn't exist yet!
+                return potential;
+            }
         }
     }
 

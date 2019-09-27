@@ -2,15 +2,10 @@ package nl.hdkesting.javatwitter.accounts;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Logger;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.*;
-import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import nl.hdkesting.javatwitter.accounts.services.TokenService;
-import nl.hdkesting.javatwitter.accounts.support.LoginDetails;
 
 import javax.management.InvalidApplicationException;
 
@@ -18,9 +13,7 @@ public class Logout {
     private TokenService tokenService;
 
     public Logout(TokenService tokenService) {
-        if (tokenService == null) {
-            throw new IllegalArgumentException("accountService and tokenService should not be null.");
-        }
+        Objects.requireNonNull(tokenService, "accountService and tokenService should not be null.");
 
         this.tokenService = tokenService;
     }
