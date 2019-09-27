@@ -4,9 +4,8 @@ import com.microsoft.azure.functions.*;
 import nl.hdkesting.javatwitter.accounts.services.AccountService;
 import nl.hdkesting.javatwitter.accounts.support.ConnStr;
 import nl.hdkesting.javatwitter.accounts.support.RequestBuilder;
-import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -16,23 +15,8 @@ import javax.management.InvalidApplicationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(Parameterized.class)
 public class EmailExistsTest {
     private AccountService accountService;
-
-    @Parameterized.Parameters(name = "{index}: {0}->{1}")
-    public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                {"unknown@invalid.com", HttpStatus.NOT_FOUND},
-                {"sample@example.com", HttpStatus.OK},
-                {"", HttpStatus.BAD_REQUEST}});
-    }
-
-    @Parameterized.Parameter(0)
-    public String emailAddressToTest;
-
-    @Parameterized.Parameter(1)
-    public HttpStatus expectedResponseStatus;
 
     // NB: do note that testing happens against an in-memory H2 database, while live runs against Azure SqlServer.
 
@@ -47,15 +31,17 @@ public class EmailExistsTest {
         }
     }
 
-    @Test
-    public void performTest() {
-        Logger.getGlobal().info("Testing address '" + this.emailAddressToTest + "' for status " + this.expectedResponseStatus);
+    @ParameterizedTest()
+    @CsvSource({"unknown@invalid.com,NOT_FOUND", "sample@example.com,OK", ",BAD_REQUEST"})
+    public void performTest(String input, String expected) {
+        Logger.getGlobal().info("Testing address '" + input + "' for status " + expected);
+        HttpStatus expectedStatus = HttpStatus.valueOf(expected);
 
         // ARRANGE
         initializeTest();
 
         final HttpRequestMessage<Optional<String>> req = new RequestBuilder()
-                .addQueryParameter("mail", this.emailAddressToTest)
+                .addQueryParameter("mail", input)
                 .build();
 
         // ACT
@@ -63,7 +49,7 @@ public class EmailExistsTest {
             final HttpResponseMessage ret = new EmailExists(this.accountService).run(req, RequestBuilder.getMockContext());
 
             // ASSERT
-            assertEquals(this.expectedResponseStatus, ret.getStatus());
+            assertEquals(expectedStatus, ret.getStatus());
         }
         catch (InvalidApplicationException ex) {
             ex.printStackTrace();
